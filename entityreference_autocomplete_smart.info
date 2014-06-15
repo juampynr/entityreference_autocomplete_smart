@@ -1,0 +1,5 @@
+name = Entityreference Autocomplete Smart
+description = Alters entityreference autocomplete queries to match smart quotes.
+core = 7.x
+dependencies[] = entityreference
+dependencies[] = transliteration

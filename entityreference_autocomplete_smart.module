@@ -1,0 +1,28 @@
+<?php
+/**
+ * @file entityreference_autocomplete_smart.module
+ * Alters entityreference autocomplete queries so they match nodes with smart
+ * quotes in their titles.
+ */
+
+/**
+ * Implements hook_entity_query_alter().
+ */
+function entityreference_autocomplete_smart_entity_query_alter($query) {
+  if (in_array('entityreference', $query->tags) && !empty($query->propertyConditions[0]['value'])) {
+    // Replace the query operator from CONTAINS to LIKE since CONTAINS involves
+    // escaping the query with db_like(), which would escape our underscore
+    // wildcards.
+    $query->propertyConditions[0]['operator'] = 'LIKE';
+    // Replace non alphanumeric characters by optional placeholders.
+    // This is used to match smart quotes and other symbols within the LIKE
+    // statement that entityreference_autocomplete performs.
+    $value = $query->propertyConditions[0]['value'];
+    // Convert anything that may lead to confusion to an optional character
+    // using Transliteration module.
+    $value = transliteration_get($value, '_', LANGUAGE_NONE);
+    $value = preg_replace('/[^A-Za-z0-9 ]/', '_',  $value);
+    $value = '%' . $value . '%';
+    $query->propertyConditions[0]['value'] = $value;
+  }
+}
